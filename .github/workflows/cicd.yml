@@ -1,0 +1,38 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+    steps:
+      - uses: act10ns/slack@v2
+        with:
+          status: starting
+          channel: '#git-action-pipeline'
+          message: Starting Docker Build and Push...
+        if: always()
+
+        
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Variables
+        id: vars
+        run: echo "::set-output name=SHORT_COMMIT_ID::$(git rev-parse --short HEAD)"
+
+      - name: Publish Image
+        id: docker-push
+        run: hostnamectl; ls -la
+
+      - uses: act10ns/slack@v2
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: '#git-action-pipeline'
+        if: always()
